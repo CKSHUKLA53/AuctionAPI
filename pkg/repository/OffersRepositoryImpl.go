@@ -1,7 +1,7 @@
 package repository
 
 import (
-	model "DemoGO/pkg/models"
+	"AuctionAPI/pkg/model"
 	"github.com/jinzhu/gorm"
 )
 
@@ -15,13 +15,13 @@ func NewOffersRepository(app *gorm.DB) *OffersRepository {
 	}
 }
 
-func (app *OffersRepository) Find(id model.ID) (*model.Offer, error) {
+func (app *OffersRepository) Find(id int) (*model.Offer, error) {
 	bid := model.Offer{Id: id}
 	err := app.DB.Find(&bid)
 
 	if err.RecordNotFound() {
 		return nil, model.ErrNotFound
-	} else if err == nil {
+	} else if err.Error == nil {
 		return &bid, nil
 	} else {
 		return nil, err.Error
@@ -46,7 +46,7 @@ func (app *OffersRepository) FindAll() ([]model.Offer, error) {
 	return offers, nil
 }
 
-func (app *OffersRepository) Delete(id model.ID) error {
+func (app *OffersRepository) Delete(id int) error {
 
 	bid := model.Offer{Id: id}
 	result := app.DB.Delete(&bid)
@@ -54,4 +54,14 @@ func (app *OffersRepository) Delete(id model.ID) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (app *OffersRepository) Update(id int, key string, value interface{}) (*model.Offer, error) {
+
+	var offer model.Offer
+	if err := app.DB.Where("id = ?", id).First(&offer).Error; err != nil {
+		return nil, model.ErrNotFound
+	}
+	app.DB.Model(&offer).Update(key, value)
+	return &offer, nil
 }

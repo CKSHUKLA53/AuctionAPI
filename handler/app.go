@@ -1,16 +1,16 @@
 package handler
 
 import (
-	"DemoGO/pkg/models"
-	"DemoGO/pkg/repository"
-	"DemoGO/pkg/service"
-	"encoding/json"
+	"AuctionAPI/middleware"
+	"AuctionAPI/pkg/model"
+	"AuctionAPI/pkg/repository"
+	"AuctionAPI/pkg/service"
 	"fmt"
+	"github.com/urfave/negroni"
 	"log"
 	"net/http"
 
 	"../config"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -43,12 +43,20 @@ func (a *App) Initialize(config config.Config) {
 	offersRepo := repository.NewOffersRepository(a.DB)
 	offerService := service.NewOfferService(offersRepo)
 
-	a.setBidsRouters(bidService, offerService)
-	a.setOffersRouters(offerService)
+	apiMiddleware := negroni.New(
+		negroni.HandlerFunc(middleware.Cors),
+		negroni.NewLogger(),
+	)
+
+	CreateOfferHandlers(a.Router, *apiMiddleware, *offerService)
+	CreateBidHandlers(a.Router, *apiMiddleware, *bidService, *offerService)
+
+	//a.setBidsRouters(bidService, offerService)
+	//a.setOffersRouters(offerService)
 
 }
 
-func (a *App) setOffersRouters(ser *service.OfferService) {
+/*func (a *App) setOffersRouters(ser *service.OfferService) {
 
 	// Routing for handling the projects
 	a.Router.HandleFunc("/offers", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,10 +69,10 @@ func (a *App) setOffersRouters(ser *service.OfferService) {
 	a.Router.HandleFunc("/offers", a.CreateOffer).Methods("POST")
 }
 
-func (a *App) setBidsRouters(ser *service.BidService) {
+func (a *App) setBidsRouters(bidService *service.BidService, offerService *service.OfferService) {
 	// Routing for handling the projects
 	a.Router.HandleFunc("/bid", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bids, err := ser.FindAll()
+		bids, err := bidService.FindAll()
 		if err != nil {
 			respondError(w, http.StatusInternalServerError, "Error occured")
 		}
@@ -72,71 +80,10 @@ func (a *App) setBidsRouters(ser *service.BidService) {
 	})).Methods("GET")
 	a.Router.HandleFunc("/bid", a.CreateOffer).Methods("POST")
 
-	a.Router.HandleFunc("/placeBid")
-}
-
-/*func (a *App) GetAllOffers(ser *service.Service) http.Handler  {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-	});
-}
-*/
-func (a *App) CreateOffer(w http.ResponseWriter, r *http.Request) {
-	CreateOffer(a.DB, w, r)
-}
+	a.Router.HandleFunc("/placeBid", placeBid(bidService, offerService))
+}*/
 
 // Run the app on it's router
 func (a *App) Run(host string) {
 	log.Fatal(http.ListenAndServe(host, a.Router))
-}
-
-func placeBid(bidService *service.BidService, offerService *service.OfferService) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var _bid *model.Bid
-		errorMessage := "Error occured while Placing a Bid"
-		client := r.Context().Value("me").(*model.Client)
-		err := json.NewDecoder(r.Body).Decode(&_bid)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Error occured while Placing a Bid"))
-			return
-		}
-
-		offer, err := offerService.Find(_bid.OfferId)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Error occured while Placing a Bid"))
-			return
-		}
-
-		if offer.BidPrice >= _bid.BidPrice {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Error occured while Placing a Bid. BidPrice < Previous Bid Price"))
-			return
-		}
-
-		offer, err = offerService.Update(_bid.OfferID, "bidprice", _bid.BidPrice)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Error occured in Placing a Bid"))
-			return
-		}
-
-		_bid.ClientId = client.Id
-		_bid, err = bidService.Store(_bid)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Error occured in Placing a Bid"))
-			return
-		}
-
-		if err := json.NewEncoder(w).Encode(_bid); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
-		}
-		w.Header().Set("Content-Type", "application/json")
-
-		w.WriteHeader(http.StatusCreated)
-
-	})
 }

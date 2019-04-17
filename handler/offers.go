@@ -1,33 +1,73 @@
 package handler
 
 import (
-	model "DemoGO/pkg/models"
+	"AuctionAPI/pkg/model"
+	"AuctionAPI/pkg/service"
 	"encoding/json"
+	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
 	"net/http"
-
-	"github.com/jinzhu/gorm"
 )
 
-/*
-func GetAllOffers(db *gorm.DB, w http.ResponseWriter, r *http.Request, service service.Service) {
-	offers := []model.Offer{}
-	db.Find(&offers)
-	respondJSON(w, http.StatusOK, offers)
+func createOffer(service service.OfferService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var offer *model.Offer
+		errorMessage := "Error occured while creating an offer"
+		err := json.NewDecoder(r.Body).Decode(&offer)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, errorMessage)
+			return
+		}
+
+		// check if offer data is valid else return error
+		if !offer.Validate() {
+			respondError(w, http.StatusBadRequest, "Bad Data error")
+			return
+		}
+		offer, err = service.Store(offer)
+
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, errorMessage)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(offer); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+		}
+		w.Header().Set("Content-Type", "application/json")
+
+		w.WriteHeader(http.StatusCreated)
+
+	})
 }
-*/
-func CreateOffer(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	offer := model.Offer{}
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&offer); err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	defer r.Body.Close()
+func getOffer(service service.OfferService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		errorMessage := "Error occured while fetching offers"
+		var offers []model.Offer
+		offers, err := service.FindAll()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+		w.WriteHeader(http.StatusAccepted)
+		if err := json.NewEncoder(w).Encode(offers); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+	})
+}
 
-	if err := db.Save(&offer).Error; err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	respondJSON(w, http.StatusCreated, offer)
+//CreateUserHandlers Maps routes to http handlers
+func CreateOfferHandlers(r *mux.Router, n negroni.Negroni, service service.OfferService) {
+	r.Handle("/offer", n.With(
+		negroni.Wrap(createOffer(service)),
+	)).Methods("POST", "OPTIONS").Name("CreateOffer")
+
+	r.Handle("/offer", n.With(
+		negroni.Wrap(getOffer(service)),
+	)).Methods("GET", "OPTIONS").Name("GetOffers")
 }

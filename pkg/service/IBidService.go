@@ -1,8 +1,8 @@
 package service
 
 import (
-	model "DemoGO/pkg/models"
-	"DemoGO/pkg/repository"
+	"AuctionAPI/pkg/model"
+	"AuctionAPI/pkg/repository"
 )
 
 type BidService struct {
@@ -22,7 +22,7 @@ func (s *BidService) Store(b *model.Bid) (*model.Bid, error) {
 }
 
 //Find a bookmark
-func (s *BidService) Find(id model.ID) (*model.Bid, error) {
+func (s *BidService) Find(id int) (*model.Bid, error) {
 	return s.repo.Find(id)
 }
 
@@ -37,10 +37,14 @@ func (s *BidService) FindAll() ([]model.Bid, error) {
 }
 
 //Delete a bookmark
-func (s *BidService) Delete(id model.ID) error {
+func (s *BidService) Delete(id int) error {
 	_, err := s.Find(id)
 	if err != nil {
 		return err
 	}
 	return s.repo.Delete(id)
+}
+
+func (s *BidService) Update(id int, key string, value interface{}) (*model.Bid, error) {
+	return s.repo.Update(id, key, value)
 }

@@ -1,12 +1,12 @@
 package repository
 
 import (
-	model "DemoGO/pkg/models"
+	"AuctionAPI/pkg/model"
 	"github.com/jinzhu/gorm"
 )
 
 type BidRepository struct {
-	DB     *gorm.DB
+	DB *gorm.DB
 }
 
 func NewBidRepository(app *gorm.DB) *BidRepository {
@@ -15,19 +15,18 @@ func NewBidRepository(app *gorm.DB) *BidRepository {
 	}
 }
 
-func (app *BidRepository)  Find(id model.ID) (*model.Bid, error) {
+func (app *BidRepository) Find(id int) (*model.Bid, error) {
 	bid := model.Bid{Id: id}
-	err:= app.DB.Find(&bid)
+	err := app.DB.Find(&bid)
 
 	if err.RecordNotFound() {
 		return nil, model.ErrNotFound
 	} else if err == nil {
-		return &bid, nil;
+		return &bid, nil
 	} else {
 		return nil, err.Error
 	}
 }
-
 
 func (app *BidRepository) Store(b *model.Bid) (*model.Bid, error) {
 
@@ -38,13 +37,14 @@ func (app *BidRepository) Store(b *model.Bid) (*model.Bid, error) {
 	return b, nil
 }
 
-func (app *BidRepository) Update(bidId *model.ID, key, ) (*model.Bid, error) {
+func (app *BidRepository) Update(id int, key string, value interface{}) (*model.Bid, error) {
 
-	err := Find()
-	if err != nil {
-		return nil, err.Error
+	var bid model.Bid
+	if err := app.DB.Where("id = ?", id).First(&bid).Error; err != nil {
+		return nil, model.ErrNotFound
 	}
-	return b, nil
+	app.DB.Model(&bid).Update(key, value)
+	return &bid, nil
 }
 
 func (app *BidRepository) FindAll() ([]model.Bid, error) {
@@ -56,12 +56,12 @@ func (app *BidRepository) FindAll() ([]model.Bid, error) {
 	return bids, nil
 }
 
-func (app *BidRepository) Delete(id model.ID) error {
+func (app *BidRepository) Delete(id int) error {
 
 	bid := model.Bid{Id: id}
-	err:= app.DB.Delete(&bid)
+	err := app.DB.Delete(&bid)
 	if err != nil {
-		return err.Error;
+		return err.Error
 	}
-	return nil;
+	return nil
 }

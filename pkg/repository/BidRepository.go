@@ -1,6 +1,8 @@
 package repository
 
-import model "DemoGO/pkg/models"
+import (
+	"AuctionAPI/pkg/model"
+)
 
 //Reader interface
 type BidReader interface {
