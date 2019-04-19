@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./config"
-	"./handler"
+	"AuctionAPI/api/config"
+	"AuctionAPI/api/handler"
 )
 
 func main() {

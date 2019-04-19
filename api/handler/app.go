@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"AuctionAPI/middleware"
+	"AuctionAPI/api/config"
+	"AuctionAPI/api/middleware"
 	"AuctionAPI/pkg/model"
 	"AuctionAPI/pkg/repository"
 	"AuctionAPI/pkg/service"
@@ -10,7 +11,6 @@ import (
 	"log"
 	"net/http"
 
-	"../config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"

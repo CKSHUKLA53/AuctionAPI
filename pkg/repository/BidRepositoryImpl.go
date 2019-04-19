@@ -31,7 +31,7 @@ func (app *BidRepository) Find(id int) (*model.Bid, error) {
 func (app *BidRepository) Store(b *model.Bid) (*model.Bid, error) {
 
 	err := app.DB.Save(&b)
-	if err != nil {
+	if err.Error != nil {
 		return nil, err.Error
 	}
 	return b, nil

@@ -44,6 +44,6 @@ func LoadConfiguration(file string) (Config, error) {
 }
 
 func GetConfig() Config {
-	config, _ := LoadConfiguration("config/config.json")
+	config, _ := LoadConfiguration("api/config/config.json")
 	return config
 }

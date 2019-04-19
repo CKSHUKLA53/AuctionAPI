@@ -5,34 +5,10 @@ import (
 	"AuctionAPI/pkg/service"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	"github.com/urfave/negroni"
 	"net/http"
 	"strconv"
 )
-
-func getAllBids(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	bids := []model.Bid{}
-	db.Find(&bids)
-	respondJSON(w, http.StatusOK, bids)
-}
-
-func CreateBid(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	bid := model.Bid{}
-
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&bid); err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	defer r.Body.Close()
-
-	if err := db.Save(&bid).Error; err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	respondJSON(w, http.StatusCreated, bid)
-}
 
 func acceptBid(bidService service.BidService, offerService service.OfferService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -92,15 +68,17 @@ func placeBid(bidService service.BidService, offerService service.OfferService) 
 			return
 		}
 
-		offer, err = offerService.Update(_bid.OfferId, "bid_price", _bid.BidPrice)
+		_bid.ClientId = client.Id
+		_bid, err = bidService.Store(_bid)
+
+		offer, err = offerService.Update(_bid.OfferId, "bid_id", _bid.Id)
+
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Error occured in Placing a Bid"))
 			return
 		}
 
-		_bid.ClientId = client.Id
-		_bid, err = bidService.Store(_bid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Error occured in Placing a Bid"))

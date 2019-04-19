@@ -21,7 +21,7 @@ func createOffer(service service.OfferService) http.Handler {
 
 		// check if offer data is valid else return error
 		if !offer.Validate() {
-			respondError(w, http.StatusBadRequest, "Bad Data error")
+			respondError(w, http.StatusUnprocessableEntity, "Bad Data error")
 			return
 		}
 		offer, err = service.Store(offer)
@@ -31,12 +31,11 @@ func createOffer(service service.OfferService) http.Handler {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(offer); err != nil {
+		/*	if err := json.NewEncoder(w).Encode(offer); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
-		}
+		}*/
 		w.Header().Set("Content-Type", "application/json")
-
 		w.WriteHeader(http.StatusCreated)
 
 	})
@@ -60,6 +59,24 @@ func getOffer(service service.OfferService) http.Handler {
 		}
 	})
 }
+func getSoldOffers(service service.OfferService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		errorMessage := "Error occured while fetching offers"
+		var offers []model.Offer
+		offers, err := service.SoldOffers()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+		w.WriteHeader(http.StatusAccepted)
+		if err := json.NewEncoder(w).Encode(offers); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+	})
+}
 
 //CreateUserHandlers Maps routes to http handlers
 func CreateOfferHandlers(r *mux.Router, n negroni.Negroni, service service.OfferService) {
@@ -69,5 +86,9 @@ func CreateOfferHandlers(r *mux.Router, n negroni.Negroni, service service.Offer
 
 	r.Handle("/offer", n.With(
 		negroni.Wrap(getOffer(service)),
+	)).Methods("GET", "OPTIONS").Name("GetOffers")
+
+	r.Handle("/sold", n.With(
+		negroni.Wrap(getSoldOffers(service)),
 	)).Methods("GET", "OPTIONS").Name("GetOffers")
 }

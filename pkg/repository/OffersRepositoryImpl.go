@@ -3,6 +3,7 @@ package repository
 import (
 	"AuctionAPI/pkg/model"
 	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
 )
 
 type OffersRepository struct {
@@ -31,7 +32,7 @@ func (app *OffersRepository) Find(id int) (*model.Offer, error) {
 func (app *OffersRepository) Store(b *model.Offer) (*model.Offer, error) {
 
 	err := app.DB.Save(&b)
-	if err != nil {
+	if err.Error != nil {
 		return nil, err.Error
 	}
 	return b, nil
@@ -39,11 +40,29 @@ func (app *OffersRepository) Store(b *model.Offer) (*model.Offer, error) {
 
 func (app *OffersRepository) FindAll() ([]model.Offer, error) {
 	offers := []model.Offer{}
-	result := app.DB.Preload("Bid").Preload("Bid.Client").Find(&offers)
+	//result := app.DB.Preload("Bid").Preload("Bid.Client").Find(&offers)
+	result := app.DB.Find(&offers)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return offers, nil
+}
+
+func (app *OffersRepository) Query(page int, size int, sortkey string) ([]*model.Offer, error) {
+
+	if size == 0 {
+		size = 10
+	}
+
+	if sortkey == "" {
+		sortkey = "go_live"
+	}
+
+	var res []*model.Offer
+	err := app.DB.Find(nil).Order(sortkey).Limit(size).Offset(page).Find(&res)
+	if err.Error != nil {
+
+	}
 }
 
 func (app *OffersRepository) Delete(id int) error {
@@ -64,4 +83,12 @@ func (app *OffersRepository) Update(id int, key string, value interface{}) (*mod
 	}
 	app.DB.Model(&offer).Update(key, value)
 	return &offer, nil
+}
+
+func (app *OffersRepository) SoldOffers() ([]model.Offer, error) {
+	offers := []model.Offer{}
+	if err := app.DB.Where("sold = ?", true).Find(&offers).Error; err != nil {
+		return nil, model.ErrNotFound
+	}
+	return offers, nil
 }

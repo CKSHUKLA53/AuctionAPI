@@ -6,13 +6,13 @@ import (
 )
 
 type Bid struct {
-	Id        int `gorm:"primary_key";"AUTO_INCREMENT"`
-	BidPrice  float64
-	OfferId   int
-	Client    Client `gorm:"foreignkey:ClientId"`
-	Timestamp time.Time
-	Accepted  bool
-	ClientId  int
+	Id        int       `gorm:"primary_key";"AUTO_INCREMENT"`
+	BidPrice  float64   `json:"bid_price"`
+	OfferId   int       `json:"offer_id"`
+	Client    Client    `gorm:"foreignkey:ClientId"`
+	Timestamp time.Time `json:"time_stamp"`
+	Accepted  bool      `json:"accepted"`
+	ClientId  int       `json:"client_id"`
 }
 
 func (bid *Bid) Validate() bool {

@@ -16,22 +16,14 @@ func NewOfferService(r *repository.OffersRepository) *OfferService {
 	}
 }
 
-//Store an bookmark
 func (s *OfferService) Store(b *model.Offer) (*model.Offer, error) {
 	return s.repo.Store(b)
 }
 
-//Find a bookmark
 func (s *OfferService) Find(id int) (*model.Offer, error) {
 	return s.repo.Find(id)
 }
 
-/*//Search bookmarks
-func (s *Service) Search(query string) ([]*model.Bid, error) {
-	return s.repo.Search(strings.ToLower(query))
-}
-*/
-//FindAll bookmarks
 func (s *OfferService) FindAll() ([]model.Offer, error) {
 	return s.repo.FindAll()
 }
@@ -47,4 +39,8 @@ func (s *OfferService) Delete(id int) error {
 
 func (s *OfferService) Update(id int, key string, value interface{}) (*model.Offer, error) {
 	return s.repo.Update(id, key, value)
+}
+
+func (s *OfferService) SoldOffers() ([]model.Offer, error) {
+	return s.repo.SoldOffers()
 }
