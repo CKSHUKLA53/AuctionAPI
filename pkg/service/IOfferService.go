@@ -27,6 +27,9 @@ func (s *OfferService) Find(id int) (*model.Offer, error) {
 func (s *OfferService) FindAll() ([]model.Offer, error) {
 	return s.repo.FindAll()
 }
+func (s *OfferService) Query(page int, size int, sortkey string) ([]*model.Offer, error) {
+	return s.repo.Query(page, size, sortkey)
+}
 
 //Delete a bookmark
 func (s *OfferService) Delete(id int) error {

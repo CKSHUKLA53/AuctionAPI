@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 	"net/http"
+	"strconv"
 )
 
 func createOffer(service service.OfferService) http.Handler {
@@ -31,10 +32,6 @@ func createOffer(service service.OfferService) http.Handler {
 			return
 		}
 
-		/*	if err := json.NewEncoder(w).Encode(offer); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
-		}*/
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
@@ -44,8 +41,21 @@ func createOffer(service service.OfferService) http.Handler {
 func getOffer(service service.OfferService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		errorMessage := "Error occured while fetching offers"
-		var offers []model.Offer
-		offers, err := service.FindAll()
+		var offers []*model.Offer
+		page, err := strconv.Atoi(r.FormValue("page"))
+		if err != nil {
+			page = 0
+		}
+		size, err := strconv.Atoi(r.FormValue("size"))
+		if err != nil {
+			size = 10
+		}
+		sortKey := r.FormValue("sortKey")
+		if sortKey == "" {
+			sortKey = "go_live"
+		}
+
+		offers, err = service.Query(page, size, sortKey)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
@@ -90,5 +100,5 @@ func CreateOfferHandlers(r *mux.Router, n negroni.Negroni, service service.Offer
 
 	r.Handle("/sold", n.With(
 		negroni.Wrap(getSoldOffers(service)),
-	)).Methods("GET", "OPTIONS").Name("GetOffers")
+	)).Methods("GET", "OPTIONS").Name("GetSoldOffers")
 }

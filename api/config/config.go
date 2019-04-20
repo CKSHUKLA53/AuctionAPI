@@ -27,8 +27,9 @@ type Config struct {
 		Name     string `json:"name"`
 		Charset  string `json:"charset"`
 	} `json:"database"`
-	Host string `json:"host"`
-	Port string `json:"port"`
+	Host   string `json:"host"`
+	Port   string `json:"port"`
+	Secret string `json:"secret"`
 }
 
 func LoadConfiguration(file string) (Config, error) {

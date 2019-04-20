@@ -3,7 +3,6 @@ package repository
 import (
 	"AuctionAPI/pkg/model"
 	"github.com/jinzhu/gorm"
-	"gopkg.in/mgo.v2"
 )
 
 type OffersRepository struct {
@@ -59,9 +58,11 @@ func (app *OffersRepository) Query(page int, size int, sortkey string) ([]*model
 	}
 
 	var res []*model.Offer
-	err := app.DB.Find(nil).Order(sortkey).Limit(size).Offset(page).Find(&res)
+	err := app.DB.Order(sortkey).Limit(size).Offset(page).Find(&res)
 	if err.Error != nil {
-
+		return nil, err.Error
+	} else {
+		return res, nil
 	}
 }
 
