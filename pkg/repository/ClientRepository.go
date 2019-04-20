@@ -21,10 +21,10 @@ func (app *ClientRepository) Find(id int) (*model.Client, error) {
 
 	if err.RecordNotFound() {
 		return nil, model.ErrNotFound
-	} else if err == nil {
-		return &client, nil
-	} else {
+	} else if err.Error != nil {
 		return nil, err.Error
+	} else {
+		return &client, nil
 	}
 }
 

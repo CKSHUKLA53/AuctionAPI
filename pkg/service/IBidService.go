@@ -16,27 +16,18 @@ func NewBidService(r *repository.BidRepository) *BidService {
 	}
 }
 
-//Store an bookmark
 func (s *BidService) Store(b *model.Bid) (*model.Bid, error) {
 	return s.repo.Store(b)
 }
 
-//Find a bookmark
 func (s *BidService) Find(id int) (*model.Bid, error) {
 	return s.repo.Find(id)
 }
 
-/*//Search bookmarks
-func (s *Service) Search(query string) ([]*model.Bid, error) {
-	return s.repo.Search(strings.ToLower(query))
-}
-*/
-//FindAll bookmarks
 func (s *BidService) FindAll() ([]model.Bid, error) {
 	return s.repo.FindAll()
 }
 
-//Delete a bookmark
 func (s *BidService) Delete(id int) error {
 	_, err := s.Find(id)
 	if err != nil {

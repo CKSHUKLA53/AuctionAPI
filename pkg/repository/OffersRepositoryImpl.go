@@ -18,7 +18,6 @@ func NewOffersRepository(app *gorm.DB) *OffersRepository {
 func (app *OffersRepository) Find(id int) (*model.Offer, error) {
 	bid := model.Offer{Id: id}
 	err := app.DB.Find(&bid)
-
 	if err.RecordNotFound() {
 		return nil, model.ErrNotFound
 	} else if err.Error == nil {
@@ -29,7 +28,6 @@ func (app *OffersRepository) Find(id int) (*model.Offer, error) {
 }
 
 func (app *OffersRepository) Store(b *model.Offer) (*model.Offer, error) {
-
 	err := app.DB.Save(&b)
 	if err.Error != nil {
 		return nil, err.Error
@@ -39,7 +37,6 @@ func (app *OffersRepository) Store(b *model.Offer) (*model.Offer, error) {
 
 func (app *OffersRepository) FindAll() ([]model.Offer, error) {
 	offers := []model.Offer{}
-	//result := app.DB.Preload("Bid").Preload("Bid.Client").Find(&offers)
 	result := app.DB.Find(&offers)
 	if result.Error != nil {
 		return nil, result.Error

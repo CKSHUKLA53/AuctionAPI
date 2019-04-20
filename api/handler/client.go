@@ -13,7 +13,7 @@ import (
 
 func signup(service service.ClientService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		errorMessage := "Error sigining up user"
+		errorMessage := "Error in registering client"
 		var client *model.Client
 
 		err := json.NewDecoder(r.Body).Decode(&client)
@@ -24,7 +24,7 @@ func signup(service service.ClientService) http.Handler {
 			return
 		}
 
-		data, err := service.FindByUsername(client.ClientName)
+		data, err := service.FindByClientName(client.ClientName)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -33,10 +33,10 @@ func signup(service service.ClientService) http.Handler {
 		}
 		if data != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("User Already Exist"))
+			w.Write([]byte("Client Already Exist"))
 			return
 		}
-		//usr.Password = user.SaltPassowrd(usr.Password)
+
 		client.Id, err = service.Store(client)
 		if err != nil {
 			log.Println(err.Error())
@@ -52,7 +52,7 @@ func signup(service service.ClientService) http.Handler {
 func login(service service.ClientService) http.Handler {
 	cfg := config.GetConfig()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		errorMessage := "Error reading user"
+		errorMessage := "Error reading client"
 		var usr *model.Client
 		err := json.NewDecoder(r.Body).Decode(&usr)
 		if err != nil {
@@ -61,7 +61,7 @@ func login(service service.ClientService) http.Handler {
 			w.Write([]byte(errorMessage))
 			return
 		}
-		data, err := service.FindByUsername(usr.ClientName)
+		data, err := service.FindByClientName(usr.ClientName)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -71,13 +71,13 @@ func login(service service.ClientService) http.Handler {
 
 		if data == nil {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("User Doesn't Exist"))
+			w.Write([]byte("Client Doesn't Exist"))
 			return
 		}
 
-		userDatum := data[0]
+		clientData := data[0]
 
-		if userDatum.Password != usr.Password {
+		if clientData.Password != usr.Password {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("Password Doesnot Match"))
 			return
@@ -88,7 +88,7 @@ func login(service service.ClientService) http.Handler {
 			w.Write([]byte(errorMessage))
 			return
 		}
-		jwtmap := userDatum.GenerateJWT([]byte(cfg.Secret))
+		jwtmap := clientData.GenerateJWT([]byte(cfg.Secret))
 		if err := json.NewEncoder(w).Encode(jwtmap); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
@@ -105,7 +105,7 @@ func CreateClientHandlers(r *mux.Router, n negroni.Negroni, service service.Clie
 		negroni.Wrap(login(service)),
 	)).Methods("POST", "OPTIONS").Name("login")
 
-	r.Handle("/signup", n.With(
+	r.Handle("/register", n.With(
 		negroni.Wrap(signup(service)),
 	)).Methods("POST", "OPTIONS").Name("signup")
 }

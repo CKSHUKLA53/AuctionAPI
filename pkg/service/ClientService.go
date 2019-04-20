@@ -20,8 +20,7 @@ func (s *ClientService) Find(b int) (*model.Client, error) {
 	return s.repo.Find(b)
 }
 
-//FindByUsername
-func (s *ClientService) FindByUsername(clientname string) ([]*model.Client, error) {
+func (s *ClientService) FindByClientName(clientname string) ([]*model.Client, error) {
 	return s.repo.FindByKey("client_name", clientname)
 }
 

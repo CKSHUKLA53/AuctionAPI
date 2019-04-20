@@ -47,14 +47,13 @@ func placeBid(bidService service.BidService, offerService service.OfferService) 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var _bid *model.Bid
 		errorMessage := "Error occured while Placing a Bid"
-
+		client := r.Context().Value("me").(*model.Client)
 		err := json.NewDecoder(r.Body).Decode(&_bid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Error occured while Placing a Bid"))
 			return
 		}
-		client := _bid.Client
 		offer, err := offerService.Find(_bid.OfferId)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +84,7 @@ func placeBid(bidService service.BidService, offerService service.OfferService) 
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(_bid); err != nil {
+		if err := json.NewEncoder(w).Encode(_bid.Id); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
 		}

@@ -13,7 +13,6 @@ type Offer struct {
 	Title    string    `json:"title"`
 	Sold     bool      `json:"sold"`
 	BidId    int       `json:"bid_id"`
-	Bid      []Bid     `gorm:"foreignkey:OfferId"` //you need to do like this
 }
 
 func (offer *Offer) Validate() bool {

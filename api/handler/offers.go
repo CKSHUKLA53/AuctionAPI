@@ -88,7 +88,6 @@ func getSoldOffers(service service.OfferService) http.Handler {
 	})
 }
 
-//CreateUserHandlers Maps routes to http handlers
 func CreateOfferHandlers(r *mux.Router, n negroni.Negroni, service service.OfferService) {
 	r.Handle("/offer", n.With(
 		negroni.Wrap(createOffer(service)),

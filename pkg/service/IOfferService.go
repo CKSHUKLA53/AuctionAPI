@@ -31,7 +31,6 @@ func (s *OfferService) Query(page int, size int, sortkey string) ([]*model.Offer
 	return s.repo.Query(page, size, sortkey)
 }
 
-//Delete a bookmark
 func (s *OfferService) Delete(id int) error {
 	_, err := s.Find(id)
 	if err != nil {

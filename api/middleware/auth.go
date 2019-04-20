@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-//LoginMiddleware Create Negroni based login middleware, requre reference to userService as pointer
-//Attaches entity.User with request context as "me"
 func LoginMiddleware(clientService *service.ClientService) negroni.HandlerFunc {
 	return negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 
@@ -28,7 +26,6 @@ func LoginMiddleware(clientService *service.ClientService) negroni.HandlerFunc {
 			return
 		}
 
-		//get the user from userID
 		client, err := clientService.Find(int(_id))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

@@ -45,13 +45,11 @@ func (a *App) Initialize(config config.Config) {
 	clientRepo := repository.NewClientRepository(a.DB)
 	clientService := service.NewClientService(clientRepo)
 
-	//Middleware for signup and login
 	authMiddleware := negroni.New(
 		negroni.HandlerFunc(middleware.Cors),
 		negroni.NewLogger(),
 	)
 
-	//Middleware for all other routes that require authentication
 	apiMiddleware := negroni.New(
 		negroni.HandlerFunc(middleware.Cors),
 		negroni.HandlerFunc(middleware.JwtMiddleware(config.Secret)),
@@ -64,9 +62,6 @@ func (a *App) Initialize(config config.Config) {
 	CreateClientHandlers(a.Router, *authMiddleware, *clientService)
 
 	http.Handle("/", a.Router)
-	a.Router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
 }
 
 // Run the app on it's router
